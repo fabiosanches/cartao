@@ -20,6 +20,17 @@ for (var i = 0; i < botoes.length; i++) {
 	botoes[i].addEventListener("click", removeCartao);
 }
 
+function removeCartao() {
+	console.log("erro");
+	var cartao = document.querySelector("#cartao_" + this.dataset.ref);
+
+	cartao.classList.add("cartao--some");
+
+	setTimeout(function() {
+		cartao.remove();
+	}, 400);
+}
+
 var contador = $(".cartao").length;
 
 $(".novoCartao")
@@ -58,6 +69,32 @@ $(".novoCartao")
 					event.preventDefault();
 				});
 
+function decideTipoCartao(conteudo) {
+	
+	var quebras = conteudo.split("<br>").length;
+	var totalDeLetras = conteudo.replace(/<br>/g, "").length;
+
+	var ultimoMaior = "";
+	conteudo.replace(/<br>/g, " ").split(" ").forEach(function(palavra) {
+
+		if (palavra.length > ultimoMaior.length) {
+			ultimoMaior = palavra;
+		}
+	});
+
+	var tamMaior = ultimoMaior.length;
+
+	var tipoCartao = "cartao--textoPequeno";
+
+	if (tamMaior < 9 && quebras < 5 && totalDeLetras < 55) {
+		tipoCartao = "cartao--textoGrande";
+	} else if (tamMaior < 12 && quebras < 6 && totalDeLetras < 75) {
+		tipoCartao = "cartao--textoMedio";
+
+	}
+
+	return tipoCartao;
+}
 
 $("#busca").on("input",function() {
 	
@@ -94,14 +131,43 @@ $("#pegaInfo").click(function() {
 		console.dir(res);
 		
 		res.instrucoes.forEach(function(instrucao) {
-			controladorDeCartoes.adicionaCartao(instrucao.conteudo, instrucao.cor);
+			adicionaCartao(instrucao.conteudo, instrucao.cor);
 		});
 	});
 });
 
+function adicionaCartao(conteudo,cor) {
+	
+	contador++;
+	
+	var botaoRemove = $("<button>")
+			.addClass("opcoesDoCartao-remove")
+			.attr("data-ref",contador)
+			.text("Remover")
+			.click(removeCartao);
+
+	var opcoes = $("<div>").addClass("opcoesDoCartao")
+			.append(botaoRemove);
+
+	var tipoCartao = decideTipoCartao(conteudo);
+
+	var conteudoTag = $("<p>").addClass("cartao-conteudo")
+			.text(conteudo);
+
+	$("<div>").attr("id", "cartao_" + contador)
+				.addClass("cartao")
+				.addClass(tipoCartao)
+				.append(opcoes)
+				.append(conteudoTag)
+				.prependTo(".mural");
+}
+
+
 
 (function(){
 	
+
+
 var usuario = "testebla@exemplo.com.br";
 
 $.getJSON(
@@ -113,7 +179,7 @@ $.getJSON(
 //			console.dir(cartoes);
 			cartoes.forEach(function(cartao){
 				console.log(cartao.conteudo);
-				controladorDeCartoes.adicionaCartao(cartao.conteudo);
+				adicionaCartao(cartao.conteudo);
 			});
 		}
 );
@@ -144,11 +210,8 @@ $("#sync").click(function() {
 		method: "POST",
 		data: mural,
 		success: function(res){
-			$("sync").addClass("botaoSync--sincronizado");
+			console.dir(cartoes);
 			console.log(res.quantidade + " cartões salvos em " + res.usuario);
-			
-			var quantidadeRemovidos = controladorDeCartoes.idUltimoCartao() - res.quantidade;
-			console.log(quantidadeRemovidos + " cartões removidos");
 		}
 		, error: function(){
 			console.log("Não foi possível salvar o mural");
