@@ -1,0 +1,19 @@
+.mural {
+	display: flex;
+	flex-wrap: wrap;
+	text-align: center;
+}
+/*
+@media (min-width: 610px) {
+	.mural {
+		align-items: flex-start;
+	}
+}
+
+@media (min-width: 900px) {
+	.mural {
+		align-items: center;
+		font-size: 1.3rem;
+	}
+	
+}*/
